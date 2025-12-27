@@ -296,6 +296,85 @@
         fineCell.textContent = item.fine.toLocaleString('th-TH');
       });
     }
+
+
+
+
+
+    document.addEventListener("DOMContentLoaded", function() {
+    // แทนที่ google.script.run ด้วยการเรียกฟังก์ชันโดยตรง
+    const data = calculateFineData(); 
+    displayData(data);
+  });
+
+  // ย้าย Logic จาก Code2.gs มาไว้ที่นี่
+  function calculateFineData() {
+    const today = new Date();
+    const todayDate = today.getDate(); // [cite: 3]
+    const fineRate = 50; // [cite: 4]
+    
+    let currentFine = 0;
+    let fineDays = 0;
+
+    // คำนวณค่าปรับปัจจุบัน [cite: 5, 6]
+    if (todayDate >= 9) {
+      fineDays = todayDate - 8;
+      currentFine = fineDays * fineRate;
+    }
+
+    // สร้างข้อมูลตารางอ้างอิง [cite: 7, 8, 9]
+    const referenceTable = [];
+    for (let day = 9; day <= 16; day++) {
+      const daysLate = day - 8;
+      const fineAmount = daysLate * fineRate;
+      referenceTable.push({ day: day, fine: fineAmount });
+    }
+
+    // จัดรูปแบบวันที่ [cite: 10]
+    const formatter = new Intl.DateTimeFormat('th-TH', { 
+      year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' 
+    });
+    const formattedDate = formatter.format(today);
+
+    return {
+      formattedDate: formattedDate,
+      currentFine: currentFine,
+      referenceTable: referenceTable
+    };
+  }
+
+  function displayData(data) {
+    const today = new Date();
+    const todayDate = today.getDate(); [cite: 56]
+    
+    document.getElementById('current-date').textContent = `ณ ${data.formattedDate}`; [cite: 57]
+    
+    const fineAmountDisplay = document.getElementById('current-fine-amount');
+    fineAmountDisplay.innerHTML = `${data.currentFine.toLocaleString('th-TH')}`; [cite: 58]
+
+    const statusMessage = document.getElementById('status-message');
+    if (data.currentFine === 0) { [cite: 59]
+        statusMessage.textContent = 'ชำระวันนี้ ไม่มีค่าปรับค่ะ';
+        statusMessage.classList.add('status-safe'); [cite: 60]
+    } else {
+        statusMessage.textContent = `ชำระวันนี้ มีค่าปรับรวม ${data.currentFine.toLocaleString('th-TH')} บาทค่ะ`;
+        statusMessage.classList.add('status-warning'); [cite: 61]
+    }
+
+    const tableBody = document.getElementById('reference-table-body');
+    tableBody.innerHTML = ''; [cite: 62]
+    
+    data.referenceTable.forEach(item => {
+      const row = tableBody.insertRow();
+      if (item.day === todayDate) { row.classList.add('highlight-row'); } [cite: 63]
+      
+      const dayCell = row.insertCell();
+      dayCell.textContent = item.day;
+      
+      const fineCell = row.insertCell();
+      fineCell.textContent = item.fine.toLocaleString('th-TH'); [cite: 64]
+    });
+  }
   </script>
 </body>
 </html>
